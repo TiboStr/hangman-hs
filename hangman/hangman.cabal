@@ -6,12 +6,12 @@ cabal-version: 1.12
 
 name:           hangman
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/hangman#readme>
-homepage:       https://github.com/githubuser/hangman#readme
-bug-reports:    https://github.com/githubuser/hangman/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2022 Author name here
+description:    Please see the README on GitHub at <https://github.com/TiboStr/hangman-hs#readme>
+homepage:       https://github.com/TiboStr/hangman-hs#readme
+bug-reports:    https://github.com/TiboStr/hangman-hs/issues
+author:         Tibo Stroo
+maintainer:     Tibo Stroo
+copyright:      2022 Tibo Stroo
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/hangman
+  location: https://github.com/TiboStr/hangman-hs
 
 library
   exposed-modules:
@@ -32,6 +32,9 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , gi-gtk ==3.0.*
+    , gi-gtk-hs
+    , haskell-gi-base
   default-language: Haskell2010
 
 executable hangman-exe
@@ -43,7 +46,10 @@ executable hangman-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , gi-gtk ==3.0.*
+    , gi-gtk-hs
     , hangman
+    , haskell-gi-base
   default-language: Haskell2010
 
 test-suite hangman-test
@@ -56,5 +62,8 @@ test-suite hangman-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , gi-gtk ==3.0.*
+    , gi-gtk-hs
     , hangman
+    , haskell-gi-base
   default-language: Haskell2010
