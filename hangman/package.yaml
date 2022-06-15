@@ -26,6 +26,7 @@ dependencies:
 - haskell-gi-base
 - text
 - directory
+- random
 
 
 library:

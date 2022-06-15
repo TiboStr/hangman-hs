@@ -36,6 +36,7 @@ library
     , gi-gtk ==3.0.*
     , gi-gtk-hs
     , haskell-gi-base
+    , random
     , text
   default-language: Haskell2010
 
@@ -53,6 +54,7 @@ executable hangman-exe
     , gi-gtk-hs
     , hangman
     , haskell-gi-base
+    , random
     , text
   default-language: Haskell2010
 
@@ -71,5 +73,6 @@ test-suite hangman-test
     , gi-gtk-hs
     , hangman
     , haskell-gi-base
+    , random
     , text
   default-language: Haskell2010

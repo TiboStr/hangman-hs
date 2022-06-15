@@ -8,52 +8,40 @@ import           Data.GI.Base
 import           Data.List
 import           Data.Text
 import           Data.Text.Internal
+import           GHC.Base                       ( undefined )
+import qualified GI.Gtk                        as Gtk
 import           System.Directory
-import qualified GI.Gtk             as Gtk
-import GHC.Base (undefined)
+import           System.Random
 
 data State = Playing Text [Char] | Won Text | Lost Text
 
 main :: IO ()
 main = do
-  loop (Playing "aac" [])
+  filecontents <- readFile "words.txt"
+  let words = Data.List.lines filecontents
+
+  stdGen <- getStdGen
+  let (number, stdGen') = randomR (0, Data.List.length words) stdGen
+  let word = words !! number
+
+  loop (Playing (pack word) []) 
 
 loop :: State -> IO ()
 loop (Won word) = do
-  Gtk.init Nothing
-
-  win <- Gtk.windowNew Gtk.WindowTypeToplevel
-
-  lbl <- Gtk.labelNew Nothing
-  Gtk.labelSetMarkup lbl $ append "You won!, You guessed the word \"" $ append word "\" correctly."
-
-  #add win lbl
-
-  Gtk.onWidgetDestroy win Gtk.mainQuit
-  #showAll win
-  Gtk.main
+  showScreenWithText $ append "You won! You guessed the word \"" 
+    $ append word "\" correctly."
 
 loop (Lost word) = do
-  Gtk.init Nothing
-
-  win <- Gtk.windowNew Gtk.WindowTypeToplevel
-
-  lbl <- Gtk.labelNew Nothing
-  Gtk.labelSetMarkup lbl $ append "You lose., You couldn't guess the word \"" $ append word  "\"."
-
-  #add win lbl
-
-  Gtk.onWidgetDestroy win Gtk.mainQuit
-  #showAll win
-  Gtk.main
-
+  showScreenWithText
+    $ append "You lose. You couldn't guess the word \""
+      $ append word "\"."
 
 loop (Playing word guesses) = do
   Gtk.init Nothing
 
   win <- Gtk.windowNew Gtk.WindowTypeToplevel
 
-  Gtk.setContainerBorderWidth win 10  -- TODO: in een functie steken
+  Gtk.setContainerBorderWidth win 10
   Gtk.setWindowTitle win "Hangman"
   Gtk.setWindowResizable win False
   Gtk.setWindowDefaultWidth win 750
@@ -61,21 +49,61 @@ loop (Playing word guesses) = do
   Gtk.setWindowWindowPosition win Gtk.WindowPositionCenter
 
   wordDisplay <- Gtk.labelNew Nothing
-  Gtk.labelSetMarkup wordDisplay $
-    append "<span size=\"200%\" weight=\"heavy\" text_transform=\"uppercase\" letter_spacing=\"2500\">" $ append (hideGuessedCharsInWord word guesses) "</span>"
+  Gtk.labelSetMarkup wordDisplay
+    $ append
+        "<span size=\"200%\" weight=\"heavy\" text_transform=\"uppercase\" letter_spacing=\"2500\">"
+    $ append (hideGuessedCharsInWord word guesses) "</span>"
 
   alreadyGuessed <- Gtk.labelNew Nothing
-  Gtk.labelSetMarkup alreadyGuessed $ pack $ "Already guessed: " ++ Data.List.intercalate ", " ( sort $ Data.List.map (\c -> [c]) guesses)
+  Gtk.labelSetMarkup alreadyGuessed
+    $  pack
+    $  "Already guessed: "
+    ++ Data.List.intercalate ", " (sort $ Data.List.map (\c -> [c]) guesses)
 
   currentDirectory <- getCurrentDirectory
-  img <- Gtk.imageNewFromFile $ currentDirectory ++ "/images/hangman" ++ show (numberOfMisses word guesses) ++ ".png"
+  img              <-
+    Gtk.imageNewFromFile
+    $  currentDirectory
+    ++ "/images/hangman"
+    ++ show (numberOfMisses word guesses)
+    ++ ".png"
 
   grid <- Gtk.gridNew
   Gtk.gridSetColumnSpacing grid 10
   Gtk.gridSetRowSpacing grid 10
   Gtk.gridSetColumnHomogeneous grid True
 
-  fillGrid grid ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'] win (Playing word guesses)
+  fillGrid
+    grid
+    [ 'a'
+    , 'b'
+    , 'c'
+    , 'd'
+    , 'e'
+    , 'f'
+    , 'g'
+    , 'h'
+    , 'i'
+    , 'j'
+    , 'k'
+    , 'l'
+    , 'm'
+    , 'n'
+    , 'o'
+    , 'p'
+    , 'q'
+    , 'r'
+    , 's'
+    , 't'
+    , 'u'
+    , 'v'
+    , 'w'
+    , 'x'
+    , 'y'
+    , 'z'
+    ]
+    win
+    (Playing word guesses)
 
   #attach grid wordDisplay 0 0 13 1  -- col row width height
   #attach grid alreadyGuessed 0 1 13 1
@@ -85,6 +113,22 @@ loop (Playing word guesses) = do
   Gtk.onWidgetDestroy win Gtk.mainQuit
   #showAll win
 
+  Gtk.main
+
+
+showScreenWithText :: Text -> IO ()
+showScreenWithText text = do
+  Gtk.init Nothing
+
+  win <- Gtk.windowNew Gtk.WindowTypeToplevel
+
+  lbl <- Gtk.labelNew Nothing
+  Gtk.labelSetMarkup lbl text
+
+  #add win lbl
+
+  Gtk.onWidgetDestroy win Gtk.mainQuit
+  #showAll win
   Gtk.main
 
 
@@ -104,34 +148,37 @@ fillGridRow grid letters win (Playing word guesses) row index = do
   on btn #clicked $ onButtonClick win (letters !! index) word guesses
   #attach grid btn (fromIntegral index) (fromIntegral row) 1 1
 
-  Control.Monad.when (index < Data.List.length letters - 1) $ fillGridRow grid letters win (Playing word guesses) row $ index + 1
+  Control.Monad.when (index < Data.List.length letters - 1)
+    $ fillGridRow grid letters win (Playing word guesses) row
+    $ index
+    + 1
 
 fillGridRow _ _ _ _ _ _ = undefined
+
 
 onButtonClick :: Gtk.Window -> Char -> Text -> [Char] -> IO ()
 onButtonClick win letter word guesses = do
   Gtk.windowClose win
-  let newGuesses = if letter `Data.List.elem` guesses then  guesses else letter : guesses
-
+  let newGuesses =
+        if letter `Data.List.elem` guesses then guesses else letter : guesses
   let action | numberOfMisses word guesses >= 8 = loop (Lost word)
-             | hasWon word newGuesses = loop (Won word)
-             | otherwise = loop (Playing word newGuesses)
+             | hasWon word newGuesses           = loop (Won word)
+             | otherwise                        = loop (Playing word newGuesses)
   action
+
 
 hideGuessedCharsInWord :: Text -> [Char] -> Text
 hideGuessedCharsInWord word guessed =
-  Data.Text.map
-    (\c ->
-       if c `Data.Text.elem` pack guessed
-         then c
-         else '_')
-    word
+  Data.Text.map (\c -> if c `Data.Text.elem` pack guessed then c else '_') word
 
 
 numberOfMisses :: Text -> [Char] -> Int
 numberOfMisses word guessed =
-    Data.Text.length $ Data.Text.filter (\c -> not $ c `Data.Text.elem` word) $ pack guessed
+  Data.Text.length
+    $ Data.Text.filter (\c -> not $ c `Data.Text.elem` word)
+    $ pack guessed
 
 
 hasWon :: Text -> [Char] -> Bool
-hasWon word guessed = Data.Text.null $ Data.Text.filter (`notElem` guessed) word
+hasWon word guessed =
+  Data.Text.null $ Data.Text.filter (`notElem` guessed) word
