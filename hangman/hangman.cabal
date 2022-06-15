@@ -32,9 +32,11 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , directory
     , gi-gtk ==3.0.*
     , gi-gtk-hs
     , haskell-gi-base
+    , text
   default-language: Haskell2010
 
 executable hangman-exe
@@ -46,10 +48,12 @@ executable hangman-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , gi-gtk ==3.0.*
     , gi-gtk-hs
     , hangman
     , haskell-gi-base
+    , text
   default-language: Haskell2010
 
 test-suite hangman-test
@@ -62,8 +66,10 @@ test-suite hangman-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , gi-gtk ==3.0.*
     , gi-gtk-hs
     , hangman
     , haskell-gi-base
+    , text
   default-language: Haskell2010

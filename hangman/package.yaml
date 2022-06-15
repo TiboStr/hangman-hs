@@ -24,6 +24,8 @@ dependencies:
 - gi-gtk == 3.0.*
 - gi-gtk-hs
 - haskell-gi-base
+- text
+- directory
 
 
 library:
